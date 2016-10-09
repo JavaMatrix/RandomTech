@@ -1,0 +1,26 @@
+{
+  "zap": {
+    "category": "player",
+    "sounds": [
+      "zap"
+    ]
+  },
+  "forge": {
+    "category": "player",
+    "sounds": [
+      "forge"
+    ]
+  },
+  "tractor_beam": {
+    "category": "player",
+    "sounds": [
+      "tractor_beam"
+    ]
+  },
+  "tractor_beam_pull": {
+    "category": "player",
+    "sounds": [
+      "tractor_beam_pull"
+    ]
+  }
+}
