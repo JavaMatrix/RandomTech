@@ -19,7 +19,7 @@ public class TileSynthesisMachine extends TileEnergetic implements
     protected int[] slotsTop = new int[]{Slots.INPUT_TOP_LEFT.id(),
             Slots.INPUT_TOP_RIGHT.id(), Slots.INPUT_BOTTOM_LEFT.id(),
             Slots.INPUT_BOTTOM_RIGHT.id()};
-    protected int[] slotsSides = new int[]{Slots.BATTERY.id()};
+    protected int[] slotsSides = new int[]{};
     SynthesisRecipes recipes = new SynthesisRecipes();
 
     public TileSynthesisMachine() {
@@ -68,21 +68,6 @@ public class TileSynthesisMachine extends TileEnergetic implements
     @Override
     public void updateEntity() {
         boolean hasChanged = false;
-
-        // First off, drain energy from the battery to power the machine.
-        if (this.getEnergyStored(ForgeDirection.UNKNOWN) < this
-                .getMaxEnergyStored(ForgeDirection.UNKNOWN)) {
-            ItemStack battery = getStackInSlot(Slots.BATTERY);
-            if (battery != null
-                    && battery.getItem() instanceof IEnergyContainerItem) {
-                IEnergyContainerItem batteryItem = (IEnergyContainerItem) battery
-                        .getItem();
-                int transfer = batteryItem.extractEnergy(battery,
-                                                         storage.getMaxReceive(), false);
-                storage.receiveEnergy(transfer, false);
-                hasChanged = true;
-            }
-        }
 
         // No operation if there's no energy.
         if (storage.getEnergyStored() >= 0) {
@@ -138,17 +123,9 @@ public class TileSynthesisMachine extends TileEnergetic implements
     }
 
     private boolean willFit(ItemStack stack, Slots slot) {
-        if (stack == null || getStackInSlot(slot) == null) {
-            return true;
-        }
-        if (!stack.isItemEqual(getStackInSlot(slot))) {
-            return false;
-        }
-        if (!stack.isStackable()) {
-            return false;
-        }
-        return stack.stackSize + getStackInSlot(slot).stackSize <= stack
-                .getMaxStackSize();
+        return stack == null || getStackInSlot(slot) == null || stack.isItemEqual(getStackInSlot(slot)) &&
+                stack.isStackable() &&
+                stack.stackSize + getStackInSlot(slot).stackSize <= stack.getMaxStackSize();
     }
 
     @Override
@@ -235,11 +212,9 @@ public class TileSynthesisMachine extends TileEnergetic implements
 
     @Override
     public boolean isUseableByPlayer(EntityPlayer player) {
-        if (worldObj.getTileEntity(xCoord, yCoord, zCoord) != this) {
-            return false;
-        }
+        return worldObj.getTileEntity(xCoord, yCoord, zCoord) == this &&
+                player.getDistance(xCoord, yCoord, zCoord) <= 8.0;
 
-        return player.getDistance(xCoord, yCoord, zCoord) <= 8.0;
     }
 
     @Override
@@ -296,7 +271,7 @@ public class TileSynthesisMachine extends TileEnergetic implements
     }
 
     public enum Slots {
-        BATTERY(0), INPUT_TOP_LEFT(1), INPUT_TOP_RIGHT(2), INPUT_BOTTOM_LEFT(3), INPUT_BOTTOM_RIGHT(
+        INPUT_TOP_LEFT(1), INPUT_TOP_RIGHT(2), INPUT_BOTTOM_LEFT(3), INPUT_BOTTOM_RIGHT(
                 4), OUTPUT(5);
 
         private int value;

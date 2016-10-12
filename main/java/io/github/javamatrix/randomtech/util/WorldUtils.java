@@ -1,8 +1,12 @@
 package io.github.javamatrix.randomtech.util;
 
+import cofh.api.energy.IEnergyProvider;
+import cofh.api.energy.IEnergyReceiver;
 import net.minecraft.block.Block;
 import net.minecraft.item.ItemStack;
+import net.minecraft.tileentity.TileEntity;
 import net.minecraft.world.IBlockAccess;
+import net.minecraftforge.common.util.ForgeDirection;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -23,11 +27,11 @@ public class WorldUtils {
      * @param z                The Z position of the origin block.
      * @param includeDiagonals Whether to include the 16 blocks diagonally adjacent to this
      *                         one.
-     * @return
+     * @return Returns a list of block positions directly adjacent to the given one.
      */
     public static List<BlockPosition> buildNeighborList(IBlockAccess world,
                                                         int x, int y, int z, boolean includeDiagonals) {
-        List<BlockPosition> neighbors = new ArrayList<BlockPosition>();
+        List<BlockPosition> neighbors = new ArrayList<>();
 
         // add the orthagonally adjacent blocks into the list.
         neighbors.add(new BlockPosition(x + 1, y, z));
@@ -76,7 +80,7 @@ public class WorldUtils {
     public static List<BlockPosition> weedBlocks(IBlockAccess world,
                                                  Collection<BlockPosition> toWeed, Block search, boolean mode) {
         // A list to pop the good items into.
-        List<BlockPosition> weeded = new ArrayList<BlockPosition>();
+        List<BlockPosition> weeded = new ArrayList<>();
         for (BlockPosition position : toWeed) {
             // Fetch the block at the given position.
             Block atPos = position.getBlock(world);
@@ -94,8 +98,8 @@ public class WorldUtils {
     /**
      * Compares ItemStacks in a machine-friendly way.
      *
-     * @param a
-     * @param b
+     * @param a The first ItemStack to compare.
+     * @param b The second ItemStack to compare.
      * @return true if a ~= b && b.stackSize >= a.stackSize, false otherwise.
      */
     public static boolean matches(ItemStack a, ItemStack b) {
@@ -109,5 +113,38 @@ public class WorldUtils {
         boolean metaEqual = a.getItemDamage() == b.getItemDamage();
         boolean amountsGood = b.stackSize >= a.stackSize;
         return itemsEqual && metaEqual && amountsGood;
+    }
+
+    /**
+     * Pushes energy from an IEnergyProvider to all of its IEnergyReceiver neighbors.
+     *
+     * @param world The world that the blocks are in.
+     * @param x     The X position of the block.
+     * @param y     The Y position of the block.
+     * @param z     The Z position of the block.
+     */
+    public static void pushEnergy(IBlockAccess world, int x, int y, int z) {
+        // Step 1 is to verify that the block is an IEnergyProvider.
+        TileEntity entity = world.getTileEntity(x, y, z);
+        if (entity == null || !(entity instanceof IEnergyProvider)) return;
+        IEnergyProvider provider = (IEnergyProvider) entity;
+
+        // Step 2 is to find the receiver neighbors and power them..
+        List<BlockPosition> neighbors = WorldUtils.buildNeighborList(world, x, y, z, false);
+        List<IEnergyReceiver> receivers = new ArrayList<>();
+        for (BlockPosition pos : neighbors) {
+            TileEntity tile = world.getTileEntity(pos.x, pos.y, pos.z);
+            if (tile instanceof IEnergyReceiver) {
+                int energyTaken =
+                        ((IEnergyReceiver) tile).receiveEnergy(ForgeDirection.UNKNOWN,
+                                                               provider.getEnergyStored(ForgeDirection.UNKNOWN),
+                                                               true);
+                int energyGiven = provider.extractEnergy(ForgeDirection.UNKNOWN,
+                                                         energyTaken,
+                                                         true);
+                ((IEnergyReceiver) tile).receiveEnergy(ForgeDirection.UNKNOWN, energyGiven, false);
+                provider.extractEnergy(ForgeDirection.UNKNOWN, energyGiven, false);
+            }
+        }
     }
 }

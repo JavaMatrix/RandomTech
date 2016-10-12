@@ -26,7 +26,6 @@ public class ContainerSynthesisMachine extends Container {
         te = what;
 
         // Add the battery and crafting slots.
-        this.addSlotToContainer(new Slot(te, Slots.BATTERY.id(), 8, 60));
         this.addSlotToContainer(new Slot(te, Slots.INPUT_TOP_LEFT.id(), 40, 26));
         this.addSlotToContainer(new Slot(te, Slots.INPUT_TOP_RIGHT.id(), 58, 26));
         this.addSlotToContainer(new Slot(te, Slots.INPUT_BOTTOM_LEFT.id(), 40,
@@ -125,8 +124,7 @@ public class ContainerSynthesisMachine extends Container {
                 }
 
                 slot.onSlotChange(origStack, copyStack);
-            } else if (slotId != Slots.BATTERY.id()
-                    && slotId != Slots.INPUT_TOP_LEFT.id()
+            } else if (slotId != Slots.INPUT_TOP_LEFT.id()
                     && slotId != Slots.INPUT_TOP_RIGHT.id()
                     && slotId != Slots.INPUT_BOTTOM_LEFT.id()
                     && slotId != Slots.INPUT_BOTTOM_RIGHT.id()) {

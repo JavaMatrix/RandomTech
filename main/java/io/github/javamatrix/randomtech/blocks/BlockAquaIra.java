@@ -44,8 +44,7 @@ public class BlockAquaIra extends Block implements ITileEntityProvider {
                 te.power = nbt.getInteger("Power");
             }
             if (nbt.hasKey("Target")) {
-                te.target = (Block) Block.blockRegistry.getObject(nbt
-                                                                          .getString("Target"));
+                te.target = (Block) Block.blockRegistry.getObject(nbt.getString("Target"));
             }
             if (nbt.hasKey("HasSpread")) {
                 te.hasSpread = nbt.getBoolean("HasSpread");

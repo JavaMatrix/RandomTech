@@ -68,9 +68,9 @@ tile.autoHammer.name=Auto-Hammer 3000
 tile.nulliumOre.name=Nullium Ore
 tile.empowermentTable.name=Empowerment Table
 tile.smartDispenser.name=Smart Dispenser
-tile.qbert.name=Q.B.E.R.T
 tile.ict.name=Intelligent Crafting Table
 tile.arthropodicDisruptor.name=Arthropodic Disruptor
+tile.thermionicEngine.name=Thermionic Engine
 
 container.synthesisMachine.name=Synthesis Machine
 container.empowermentTable.name=Empowerment Table
@@ -80,3 +80,6 @@ entity.Bike.name=Bike
 
 potion.strider=Strider
 potion.strider.postfix=Potion of Striding
+
+text.generating=Generating
+text.noliquid=No Liquid

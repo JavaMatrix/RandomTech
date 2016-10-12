@@ -64,9 +64,6 @@ public class RandomTech {
         // Register our one potion effect.
         Registration.potionStrider = new PotionStrider();
 
-        // Init the GuiHandler.
-        // TODO GuiHandler.init();
-
         // Register any custom splashes with Neptune, if it's installed.
         Registration.registerNeptuneSplashes();
 

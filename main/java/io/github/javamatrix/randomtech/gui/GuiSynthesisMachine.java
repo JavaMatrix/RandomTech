@@ -4,133 +4,78 @@ import io.github.javamatrix.randomtech.RandomTech;
 import io.github.javamatrix.randomtech.container.ContainerSynthesisMachine;
 import io.github.javamatrix.randomtech.recipes.SynthesisRecipes;
 import io.github.javamatrix.randomtech.tileentities.TileSynthesisMachine;
-import io.github.javamatrix.randomtech.util.TextUtils;
-import net.minecraft.client.gui.inventory.GuiContainer;
 import net.minecraft.client.resources.I18n;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.util.ResourceLocation;
-import net.minecraftforge.common.util.ForgeDirection;
-import org.lwjgl.opengl.GL11;
 
-public class GuiSynthesisMachine extends GuiContainer {
-    public static final int LINE_HEIGHT = 11;
+public class GuiSynthesisMachine extends GuiEnergetic {
     public ResourceLocation synthesisMachineGuiTextures = new ResourceLocation(
             RandomTech.modid.toLowerCase(), "textures/gui/synthesisMachine.png");
-    public TileSynthesisMachine te;
+    public TileSynthesisMachine tesm;
 
     public GuiSynthesisMachine(EntityPlayer player,
                                TileSynthesisMachine tile) {
-        super(new ContainerSynthesisMachine(player, tile));
-        this.te = tile;
+        super(new ContainerSynthesisMachine(player, tile), tile);
+        this.tesm = tile;
     }
 
     @Override
     protected void drawGuiContainerForegroundLayer(int mouseX, int mouseY) {
+        super.drawGuiContainerForegroundLayer(mouseX, mouseY);
+
         String string = I18n.format(te.getInventoryName());
         this.fontRendererObj.drawString(string,
                                         (this.xSize - this.fontRendererObj.getStringWidth(string)) / 2,
                                         6, 0x404040);
-        if (isRFHovered(mouseX, mouseY)) {
-            drawRFTooltip(mouseX, mouseY);
-        }
-    }
-
-    private boolean isRFHovered(int mouseX, int mouseY) {
-        int xMid = (this.width - this.xSize) / 2;
-        int yMid = (this.height - this.ySize) / 2;
-        mouseX -= xMid;
-        mouseY -= yMid;
-        return mouseX >= 7 && mouseX <= 25 && mouseY >= 7 && mouseY <= 57;
     }
 
     @Override
     protected void drawGuiContainerBackgroundLayer(float deltaTimeMS,
                                                    int mouseX, int mouseY) {
-        GL11.glColor4f(1.0f, 1.0f, 1.0f, 1.0f);
-        this.mc.getTextureManager().bindTexture(synthesisMachineGuiTextures);
-        int xMid = (this.width - this.xSize) / 2;
-        int yMid = (this.height - this.ySize) / 2;
-        this.drawTexturedModalRect(xMid, yMid, 0, 0, this.xSize, this.ySize);
+        super.drawGuiContainerBackgroundLayer(deltaTimeMS, mouseX, mouseY);
+        mc.renderEngine.bindTexture(getResourceLocation());
         this.drawTexturedModalRect(xMid + 82, yMid + 32, 176, 80, getWorkProgress(), 22);
-        int rfPixels = getRFPixels();
-        this.drawTexturedModalRect(xMid + 8, yMid + 8 + (48 - rfPixels), 176,
-                                   16 + (48 - rfPixels), 16, rfPixels);
-    }
-
-    private int getRFPixels() {
-        float energyF = (float) te.getEnergyStored(ForgeDirection.UNKNOWN)
-                / (float) te.getMaxEnergyStored(ForgeDirection.UNKNOWN);
-        return (int) (energyF * 48);
     }
 
     private int getWorkProgress() {
         SynthesisRecipes.RecipeResult recipe = SynthesisRecipes.instance().getResult(
-                te);
+                tesm);
         if (recipe == null) {
             return 0;
         }
 
-        float progressF = (float) te.currentWorkDone
+        float progressF = (float) tesm.currentWorkDone
                 / (float) recipe.getWorkRequired();
         return (int) (progressF * 54);
     }
 
-    public void drawRFTooltip(int mouseX, int mouseY) {
-        // Code modified from Zyin's at
-        // http://www.minecraftforum.net/forums/mapping-and-modding/minecraft-mods/modification-development/1437428-guide-1-7-2-how-to-make-button-tooltips
-        String[] tooltipArray = new String[]{TextUtils.formatRF(te
-                                                                        .getEnergyStored(ForgeDirection.UNKNOWN))};
+    @Override
+    protected int getRFHeight() {
+        return 68;
+    }
 
-        int tooltipWidth = mc.fontRenderer.getStringWidth(tooltipArray[0]);
-        int tooltipHeight = mc.fontRenderer.FONT_HEIGHT - 2;
+    @Override
+    protected int getRFPositionX() {
+        return 8;
+    }
 
-        int xMid = (this.width - this.xSize) / 2;
-        int yMid = (this.height - this.ySize) / 2;
+    @Override
+    protected int getRFPositionY() {
+        return 8;
+    }
 
-        int tooltipX = mouseX - xMid - tooltipWidth;
-        int tooltipY = mouseY - yMid;
+    @Override
+    protected int getRFPositionU() {
+        return 176;
+    }
 
-        if (tooltipX > width - tooltipWidth - 7)
-            tooltipX = width - tooltipWidth - 7;
-        if (tooltipY > height - tooltipHeight - 8)
-            tooltipY = height - tooltipHeight - 8;
+    @Override
+    protected int getRFPositionV() {
+        return 0;
+    }
 
-        // render the background inside box
-        int innerAlpha = -0xFEFFFF0; // very very dark purple
-        drawGradientRect(tooltipX, tooltipY - 1, tooltipX + tooltipWidth + 6,
-                         tooltipY, innerAlpha, innerAlpha);
-        drawGradientRect(tooltipX, tooltipY + tooltipHeight + 6, tooltipX
-                                 + tooltipWidth + 6, tooltipY + tooltipHeight + 7, innerAlpha,
-                         innerAlpha);
-        drawGradientRect(tooltipX, tooltipY, tooltipX + tooltipWidth + 6,
-                         tooltipY + tooltipHeight + 6, innerAlpha, innerAlpha);
-        drawGradientRect(tooltipX - 1, tooltipY, tooltipX, tooltipY
-                + tooltipHeight + 6, innerAlpha, innerAlpha);
-        drawGradientRect(tooltipX + tooltipWidth + 6, tooltipY, tooltipX
-                                 + tooltipWidth + 7, tooltipY + tooltipHeight + 6, innerAlpha,
-                         innerAlpha);
-
-        // render the background outside box
-        int outerAlpha1 = 0x505000FF;
-        int outerAlpha2 = (outerAlpha1 & 0xFEFEFE) >> 1 | outerAlpha1
-                & -0x1000000;
-        drawGradientRect(tooltipX, tooltipY + 1, tooltipX + 1, tooltipY
-                + tooltipHeight + 6 - 1, outerAlpha1, outerAlpha2);
-        drawGradientRect(tooltipX + tooltipWidth + 5, tooltipY + 1, tooltipX
-                                 + tooltipWidth + 7, tooltipY + tooltipHeight + 6 - 1,
-                         outerAlpha1, outerAlpha2);
-        drawGradientRect(tooltipX, tooltipY, tooltipX + tooltipWidth + 3,
-                         tooltipY + 1, outerAlpha1, outerAlpha1);
-        drawGradientRect(tooltipX, tooltipY + tooltipHeight + 5, tooltipX
-                                 + tooltipWidth + 7, tooltipY + tooltipHeight + 6, outerAlpha2,
-                         outerAlpha2);
-
-        // render the foreground text
-        int lineCount = 0;
-        for (String s : tooltipArray) {
-            mc.fontRenderer.drawStringWithShadow(s, tooltipX + 2, tooltipY + 2
-                    + lineCount * LINE_HEIGHT, 0xFFFFFF);
-            lineCount++;
-        }
+    @Override
+    protected ResourceLocation getResourceLocation() {
+        return synthesisMachineGuiTextures;
     }
 }

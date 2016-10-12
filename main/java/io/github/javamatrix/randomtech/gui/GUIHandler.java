@@ -4,9 +4,11 @@ import cpw.mods.fml.common.network.IGuiHandler;
 import io.github.javamatrix.randomtech.container.ContainerEmpowermentTable;
 import io.github.javamatrix.randomtech.container.ContainerEnergetic;
 import io.github.javamatrix.randomtech.container.ContainerSynthesisMachine;
+import io.github.javamatrix.randomtech.container.ContainerThermionicEngine;
 import io.github.javamatrix.randomtech.tileentities.TileEmpowermentTable;
 import io.github.javamatrix.randomtech.tileentities.TileEnergetic;
 import io.github.javamatrix.randomtech.tileentities.TileSynthesisMachine;
+import io.github.javamatrix.randomtech.tileentities.TileThermionicEngine;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.world.World;
@@ -35,6 +37,10 @@ public class GUIHandler implements IGuiHandler {
                 if (te instanceof TileEnergetic) {
                     return new ContainerEnergetic(player, (TileEnergetic) te);
                 }
+            case GUI.THERMIONIC_ENGINE:
+                if (te instanceof TileThermionicEngine) {
+                    return new ContainerThermionicEngine(player, (TileThermionicEngine) te);
+                }
             default:
                 return null;
         }
@@ -61,6 +67,10 @@ public class GUIHandler implements IGuiHandler {
             case GUI.ENERGETIC:
                 if (te instanceof TileEnergetic) {
                     return new GuiEnergetic(player, (TileEnergetic) te);
+                }
+            case GUI.THERMIONIC_ENGINE:
+                if (te instanceof TileThermionicEngine) {
+                    return new GuiThermionicEngine(player, (TileThermionicEngine) te);
                 }
             default:
                 return null;

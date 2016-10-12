@@ -9,4 +9,5 @@ public class GUI {
     public static final int EMPOWERMENT_TABLE = 0;
     public static final int SYNTHESIS_MACHINE = 1;
     public static final int ENERGETIC = 2;
+    public static final int THERMIONIC_ENGINE = 3;
 }

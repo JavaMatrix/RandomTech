@@ -1,6 +1,7 @@
 package io.github.javamatrix.randomtech.tileentities;
 
-import cofh.api.energy.IEnergyProvider;
+import cofh.api.energy.EnergyStorage;
+import io.github.javamatrix.randomtech.util.WorldUtils;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraftforge.common.util.ForgeDirection;
 import net.minecraftforge.fluids.*;
@@ -9,16 +10,26 @@ import net.minecraftforge.fluids.*;
  * Created by JavaMatrix on 7/20/2015.
  * Licensed under Apache Commons 2.0.
  */
-public class TileThermionicEngine extends TileBase implements IEnergyProvider, IFluidHandler {
+public class TileThermionicEngine extends TileEnergetic implements IFluidHandler {
 
     public static final int MAX_ENERGY_STORED = 400000;
-    public static final double TEMPERATURE_TO_WORK_FACTOR = 0.004;
-    private FluidTank hot;
-    private FluidTank cold;
-    private int energyStored;
+    public static final double TEMPERATURE_TO_WORK_FACTOR = 0.001;
+    public static final int FLUID_AMOUNT = 24000;
+    public static final int DEGREE_TICKS_PER_RF = 25;
+    public FluidTank hot = new FluidTank(FLUID_AMOUNT);
+    public FluidTank cold = new FluidTank(FLUID_AMOUNT);
+
+    public TileThermionicEngine() {
+        super();
+        hot.setCapacity(FLUID_AMOUNT);
+        cold.setCapacity(FLUID_AMOUNT);
+        storage = new EnergyStorage(MAX_ENERGY_STORED, 0, 240);
+    }
 
     @Override
     public void writeCustomNBT(NBTTagCompound nbt) {
+        super.writeCustomNBT(nbt);
+
         NBTTagCompound hotNBT = new NBTTagCompound();
         if (hot != null) {
             hot.writeToNBT(hotNBT);
@@ -30,8 +41,6 @@ public class TileThermionicEngine extends TileBase implements IEnergyProvider, I
             cold.writeToNBT(coldNBT);
         }
         nbt.setTag("Cold", coldNBT);
-
-        nbt.setInteger("Energy", energyStored);
     }
 
     @Override
@@ -41,76 +50,40 @@ public class TileThermionicEngine extends TileBase implements IEnergyProvider, I
             hot.readFromNBT(nbt.getCompoundTag("Hot"));
         }
         if (nbt.hasKey("Cold")) {
-            cold = new FluidTank(hot.getFluid(), 0);
-            cold.readFromNBT(nbt.getCompoundTag("Hot"));
+            cold = new FluidTank(cold.getFluid(), 0);
+            cold.readFromNBT(nbt.getCompoundTag("Cold"));
         }
-        if (nbt.hasKey("Energy")) {
-            energyStored = nbt.getInteger("Energy");
-        }
+
+        super.readCustomNBT(nbt);
     }
 
     @Override
     public void updateEntity() {
-        int temperatureDifference = hot.getFluid().getFluid().getTemperature() - cold.getFluid().getFluid().getTemperature();
-        // Work is both the amount of energy produced and the amount of each fluid (in mB) that is drained from the
-        // internal tanks. It's based on a value of 40 work for lava (1300T) and water (300T) by default.
-        int work = (int) (temperatureDifference * TEMPERATURE_TO_WORK_FACTOR);
-        if (hot.getFluidAmount() > work && cold.getFluidAmount() > work) {
-            energyStored = Math.min(energyStored + temperatureDifference / 400, MAX_ENERGY_STORED);
-            hot.drain(work, true);
-            cold.drain(work, true);
-        }
-    }
+        if (hot.getFluid() != null && cold.getFluid() != null) {
+            int temperatureDifference = hot.getFluid().getFluid().getTemperature() - cold.getFluid().getFluid().getTemperature();
+            int generated = temperatureDifference / DEGREE_TICKS_PER_RF;
+            generated = Math.min(generated, MAX_ENERGY_STORED - storage.getEnergyStored());
 
-    /**
-     * Remove energy from an IEnergyProvider, internal distribution is left entirely to the IEnergyProvider.
-     *
-     * @param from       Orientation the energy is extracted from.
-     * @param maxExtract Maximum amount of energy to extract.
-     * @param simulate   If TRUE, the extraction will only be simulated.
-     * @return Amount of energy that was (or would have been, if simulated) extracted.
-     */
-    @Override
-    public int extractEnergy(ForgeDirection from, int maxExtract, boolean simulate) {
-        int energyToExtract = Math.min(energyStored, maxExtract);
-
-        if (!simulate) {
-            energyStored -= energyToExtract;
+            // Work is both the amount of energy produced and the amount of each fluid (in mB) that is drained from the
+            // internal tanks.
+            int work = (int) (generated * DEGREE_TICKS_PER_RF * TEMPERATURE_TO_WORK_FACTOR);
+            work = Math.max(work, 1);
+            if (hot.getFluidAmount() >= work && cold.getFluidAmount() >= work) {
+                storage.setEnergyStored(Math.min(storage.getEnergyStored() + generated, MAX_ENERGY_STORED));
+                hot.drain(work, true);
+                cold.drain(work, true);
+            }
         }
 
-        return energyToExtract;
-    }
+        if (hot.getFluidAmount() == 0) {
+            hot.setFluid(null);
+        }
 
-    /**
-     * Returns the amount of energy currently stored.
-     *
-     * @param from The side to query energy levels from.
-     */
-    @Override
-    public int getEnergyStored(ForgeDirection from) {
-        return energyStored;
-    }
+        if (cold.getFluidAmount() == 0) {
+            cold.setFluid(null);
+        }
 
-    /**
-     * Returns the maximum amount of energy that can be stored.
-     *
-     * @param from The side to query max energy levels from.
-     */
-    @Override
-    public int getMaxEnergyStored(ForgeDirection from) {
-
-        return MAX_ENERGY_STORED;
-    }
-
-    /**
-     * Returns TRUE if the TileEntity can connect on a given side.
-     *
-     * @param from The side to query connection ability from.
-     */
-    @Override
-    public boolean canConnectEnergy(ForgeDirection from) {
-
-        return true;
+        WorldUtils.pushEnergy(worldObj, xCoord, yCoord, zCoord);
     }
 
     /**
@@ -123,16 +96,22 @@ public class TileThermionicEngine extends TileBase implements IEnergyProvider, I
      */
     @Override
     public int fill(ForgeDirection from, FluidStack resource, boolean doFill) {
-        if (resource.getFluid().equals(hot.getFluid().getFluid()) || (hot.getFluidAmount() == 0 && resource.getFluid().getTemperature() > 0)) {
-            int amount = Math.min(8000 - hot.getFluidAmount(), resource.amount);
+        if (hot.getFluid() != null && resource.getFluid().equals(hot.getFluid().getFluid()) ||
+                (hot.getFluidAmount() == 0 && resource.getFluid().getTemperature() > 800)) {
+            int amount = Math.min(FLUID_AMOUNT - hot.getFluidAmount(), resource.amount);
             if (doFill) {
-                hot.setFluid(new FluidStack(hot.getFluid(), hot.getFluidAmount() + amount));
+                hot.setFluid(new FluidStack(resource.getFluid(), hot.getFluidAmount() + amount));
+                markDirty();
+                worldObj.markBlockForUpdate(xCoord, yCoord, zCoord);
             }
             return amount;
-        } else if (resource.getFluid().equals(cold.getFluid().getFluid()) || (hot.getFluidAmount() == 0 && resource.getFluid().getTemperature() <= 0)) {
-            int amount = Math.min(8000 - cold.getFluidAmount(), resource.amount);
+        } else if (cold.getFluid() != null && resource.getFluid().equals(cold.getFluid().getFluid()) ||
+                (cold.getFluidAmount() == 0 && resource.getFluid().getTemperature() <= 800)) {
+            int amount = Math.min(FLUID_AMOUNT - cold.getFluidAmount(), resource.amount);
             if (doFill) {
-                cold.setFluid(new FluidStack(cold.getFluid(), cold.getFluidAmount() + amount));
+                cold.setFluid(new FluidStack(resource.getFluid(), cold.getFluidAmount() + amount));
+                markDirty();
+                worldObj.markBlockForUpdate(xCoord, yCoord, zCoord);
             }
             return amount;
         } else {
@@ -155,24 +134,28 @@ public class TileThermionicEngine extends TileBase implements IEnergyProvider, I
             int amount = Math.min(8000 - hot.getFluidAmount(), resource.amount);
             if (doDrain) {
                 hot.setFluid(new FluidStack(hot.getFluid(), hot.getFluidAmount() + amount));
+                markDirty();
+                worldObj.markBlockForUpdate(xCoord, yCoord, zCoord);
             }
             return new FluidStack(hot.getFluid().getFluid(), amount);
         } else if (resource.getFluid().equals(cold.getFluid().getFluid()) || (hot.getFluidAmount() == 0 && resource.getFluid().getTemperature() <= 0)) {
             int amount = Math.min(8000 - cold.getFluidAmount(), resource.amount);
             if (doDrain) {
                 cold.setFluid(new FluidStack(cold.getFluid(), cold.getFluidAmount() + amount));
+                markDirty();
+                worldObj.markBlockForUpdate(xCoord, yCoord, zCoord);
             }
             return new FluidStack(cold.getFluid().getFluid(), amount);
         } else {
-            return new FluidStack(FluidRegistry.WATER, 0);
+            return null;
         }
     }
 
     /**
      * Drains fluid out of internal tanks, distribution is left entirely to the IFluidHandler.
-     * <p>
+     * <p/>
      * This method is not Fluid-sensitive.
-     * <p>
+     * <p/>
      * This particular implementation will first try to drain the full amount,
      * then any amount at all, preferring hot fluids in both cases.
      *
@@ -198,10 +181,10 @@ public class TileThermionicEngine extends TileBase implements IEnergyProvider, I
 
     /**
      * Returns true if the given fluid can be inserted into the given direction.
-     * <p>
+     * <p/>
      * More formally, this should return true if fluid is able to enter from the given direction.
      *
-     * @param from The side to query fill possibility from.
+     * @param from  The side to query fill possibility from.
      * @param fluid The fluid to query fill possibility about.
      */
     @Override
@@ -211,10 +194,10 @@ public class TileThermionicEngine extends TileBase implements IEnergyProvider, I
 
     /**
      * Returns true if the given fluid can be extracted from the given direction.
-     * <p>
+     * <p/>
      * More formally, this should return true if fluid is able to leave from the given direction.
      *
-     * @param from The side to query drain possibility from.
+     * @param from  The side to query drain possibility from.
      * @param fluid The fluid to query drain possibility about.
      */
     @Override
@@ -231,6 +214,6 @@ public class TileThermionicEngine extends TileBase implements IEnergyProvider, I
      */
     @Override
     public FluidTankInfo[] getTankInfo(ForgeDirection from) {
-        return new FluidTankInfo[] { hot.getInfo(), cold.getInfo() };
+        return new FluidTankInfo[]{hot.getInfo(), cold.getInfo()};
     }
 }

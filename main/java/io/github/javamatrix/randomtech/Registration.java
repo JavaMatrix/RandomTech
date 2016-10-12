@@ -482,6 +482,14 @@ public class Registration {
                                    "arthropodicDisruptor");
         GameRegistry.registerTileEntity(TileArthropodicDisruptor.class,
                                         "teArthropodicDisruptor");
+
+        RandomTechBlocks.thermionicEngine = new BlockThermionicEngine()
+                .setCreativeTab(randomTechCreativeTab).setBlockName(
+                        "thermionicEngine");
+        GameRegistry.registerBlock(RandomTechBlocks.thermionicEngine,
+                                   "thermionicEngine");
+        GameRegistry.registerTileEntity(TileThermionicEngine.class,
+                                        "teThermionicEngine");
     }
 
     /**
@@ -820,5 +828,6 @@ public class Registration {
         public static Block empowermentTable;
         // public static Block smartDispenser;
         public static Block arthropodicDisruptor;
+        public static Block thermionicEngine;
     }
 }
