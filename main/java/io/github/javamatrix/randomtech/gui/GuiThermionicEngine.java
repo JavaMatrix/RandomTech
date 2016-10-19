@@ -11,15 +11,16 @@ import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.util.IIcon;
 import net.minecraft.util.ResourceLocation;
 import net.minecraftforge.fluids.Fluid;
+import org.lwjgl.input.Keyboard;
 import org.lwjgl.opengl.GL11;
 
-public class GuiThermionicEngine extends GuiEnergetic {
-    public ResourceLocation thermionicEngineGuiTextures = new ResourceLocation(
+class GuiThermionicEngine extends GuiEnergetic {
+    private ResourceLocation thermionicEngineGuiTextures = new ResourceLocation(
             RandomTech.modid.toLowerCase(), "textures/gui/thermionic.png");
-    public TileThermionicEngine tete;
+    private TileThermionicEngine tete;
 
-    public GuiThermionicEngine(EntityPlayer player,
-                               TileThermionicEngine tile) {
+    GuiThermionicEngine(EntityPlayer player,
+                        TileThermionicEngine tile) {
         super(new ContainerThermionicEngine(player, tile), tile);
         this.tete = tile;
         ySize = 172;
@@ -34,7 +35,8 @@ public class GuiThermionicEngine extends GuiEnergetic {
         int rft = 0;
         if (tete.hot.getFluid() != null && tete.cold.getFluid() != null) {
             int tempDif = tete.hot.getFluid().getFluid().getTemperature() - tete.cold.getFluid().getFluid().getTemperature();
-            rft = tempDif / 25;
+            rft = (int) (TileThermionicEngine.SECOND_ORDER_COEFFICIENT * tempDif * tempDif +
+                    TileThermionicEngine.FIRST_ORDER_COEFFICIENT * tempDif);
         }
         String string = rft + " RF/t";
 
@@ -46,7 +48,11 @@ public class GuiThermionicEngine extends GuiEnergetic {
             if (tete.cold.getFluid() == null) {
                 drawTooltip(I18n.format("text.noliquid"), mouseX, mouseY);
             } else {
-                drawTooltip(TextUtils.formatFluid(tete.cold.getFluid()), mouseX, mouseY);
+                String str = TextUtils.formatFluid(tete.cold.getFluid());
+                if (Keyboard.isKeyDown(Keyboard.KEY_LSHIFT)) {
+                    str += " " + I18n.format("text.clicktodrain");
+                }
+                drawTooltip(str, mouseX, mouseY);
             }
         }
 
@@ -54,21 +60,26 @@ public class GuiThermionicEngine extends GuiEnergetic {
             if (tete.hot.getFluid() == null) {
                 drawTooltip(I18n.format("text.noliquid"), mouseX, mouseY);
             } else {
-                drawTooltip(TextUtils.formatFluid(tete.hot.getFluid()), mouseX, mouseY);
+                String str = TextUtils.formatFluid(tete.hot.getFluid());
+                if (Keyboard.isKeyDown(Keyboard.KEY_LSHIFT)) {
+                    str += " " + I18n.format("text.clicktodrain");
+                    System.out.println("HI");
+                }
+                drawTooltip(str, mouseX, mouseY);
             }
         }
 
         super.drawGuiContainerForegroundLayer(mouseX, mouseY);
     }
 
-    protected boolean isColdHovered(int mouseX, int mouseY) {
+    private boolean isColdHovered(int mouseX, int mouseY) {
         mouseX -= xMid;
         mouseY -= yMid;
         return mouseX >= 26 && mouseX <= 42
                 && mouseY >= 8 && mouseY <= 76;
     }
 
-    protected boolean isHotHovered(int mouseX, int mouseY) {
+    private boolean isHotHovered(int mouseX, int mouseY) {
         mouseX -= xMid;
         mouseY -= yMid;
         return mouseX >= 134 && mouseX <= 150
@@ -116,6 +127,20 @@ public class GuiThermionicEngine extends GuiEnergetic {
             tessellator.addVertexWithUV(barMinX, slicedBarY - slicedBarHeight, zLevel, minU, minV);
             tessellator.draw();
         }
+    }
+
+    @Override
+    public void mouseClicked(int x, int y, int button) {
+        if (Keyboard.isKeyDown(Keyboard.KEY_LSHIFT)) {
+            if (isColdHovered(x, y)) {
+                tete.cold.setFluid(null);
+            }
+            if (isHotHovered(x, y)) {
+                tete.hot.setFluid(null);
+            }
+        }
+
+        super.mouseClicked(x, y, button);
     }
 
     @Override

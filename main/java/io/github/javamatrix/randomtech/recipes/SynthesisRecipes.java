@@ -19,7 +19,7 @@ import java.util.Map.Entry;
 public class SynthesisRecipes {
 
     protected static SynthesisRecipes recipes = null;
-    public List<ISynthesisRecipeHandler> listeners = new ArrayList<ISynthesisRecipeHandler>();
+    public List<ISynthesisRecipeHandler> listeners = new ArrayList<>();
 
     public SynthesisRecipes() {
         listeners.add(new DefaultSynthesisRecipes());
@@ -33,10 +33,7 @@ public class SynthesisRecipes {
     }
 
     private boolean isClass(TileSynthesisMachine machine, Slots slot, Class c) {
-        if (machine.getStackInSlot(slot) == null) {
-            return false;
-        }
-        return machine.getStackInSlot(slot).getItem().getClass().equals(c);
+        return machine.getStackInSlot(slot) != null && machine.getStackInSlot(slot).getItem().getClass().equals(c);
     }
 
     public RecipeResult getResult(TileSynthesisMachine machine) {
@@ -78,9 +75,9 @@ public class SynthesisRecipes {
 
     public class DefaultSynthesisRecipes implements ISynthesisRecipeHandler {
 
-        public Map<ItemStack[], RecipeResult> simpleRecipes = new HashMap<ItemStack[], RecipeResult>();
+        public Map<ItemStack[], RecipeResult> simpleRecipes = new HashMap<>();
 
-        public DefaultSynthesisRecipes() {
+        DefaultSynthesisRecipes() {
             simpleRecipes.put(new ItemStack[]{
                     new ItemStack(Blocks.iron_block),
                     new ItemStack(Blocks.redstone_block)}, new RecipeResult(
@@ -135,6 +132,12 @@ public class SynthesisRecipes {
                     new ItemStack(Blocks.redstone_block),
                     new ItemStack(Blocks.gold_block)}, new RecipeResult(
                     new ItemStack(RandomTechBlocks.yellowBrickRoad, 8), 10000));
+            simpleRecipes.put(new ItemStack[]{
+                    new ItemStack(Items.coal, 1),
+                    new ItemStack(Items.coal, 1),
+                    new ItemStack(Items.coal, 1, 1),
+                    new ItemStack(Items.coal, 1, 1)}, new RecipeResult(
+                    new ItemStack(RandomTechItems.carbonNanotube, 1), 5000));
         }
 
         @Override
@@ -157,7 +160,7 @@ public class SynthesisRecipes {
                         RandomTechItems.hardenedMetalPlate, 2), 8000);
             }
 
-            List<ItemStack> stacksCrafting = new ArrayList<ItemStack>();
+            List<ItemStack> stacksCrafting = new ArrayList<>();
             for (int i = Slots.INPUT_TOP_LEFT.id(); i <= Slots.INPUT_BOTTOM_RIGHT
                     .id(); i++) {
                 ItemStack stack = machine.getStackInSlot(i);
@@ -169,7 +172,7 @@ public class SynthesisRecipes {
             for (Entry<ItemStack[], RecipeResult> recipe : simpleRecipes
                     .entrySet()) {
                 boolean canCraft = true;
-                List<ItemStack> availableStacks = new ArrayList<ItemStack>(
+                List<ItemStack> availableStacks = new ArrayList<>(
                         stacksCrafting);
                 for (ItemStack s : recipe.getKey()) {
                     boolean hasStack = false;

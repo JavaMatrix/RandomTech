@@ -37,7 +37,7 @@ public class Registration {
 
     public static Potion potionStrider;
     // The creative tab for the mod.
-    public static CreativeTabs randomTechCreativeTab = new CreativeTabs(
+    private static CreativeTabs randomTechCreativeTab = new CreativeTabs(
             "randomTechCreativeTab") {
         @Override
         public Item getTabIconItem() {
@@ -48,7 +48,7 @@ public class Registration {
     /**
      * Registers all the items in the mod.
      */
-    public static void registerItems() {
+    static void registerItems() {
         RandomTechItems.itemDebugger = new ItemDebugger()
                 .setCreativeTab(randomTechCreativeTab)
                 .setUnlocalizedName("itemDebugger")
@@ -379,12 +379,18 @@ public class Registration {
         FluidContainerRegistry
                 .registerFluidContainer(new FluidStack(FluidRegistry.WATER,
                                                        1000), infinityBucket, emptyInfinityBucket);
+
+        RandomTechItems.carbonNanotube = new Item()
+                .setCreativeTab(randomTechCreativeTab)
+                .setUnlocalizedName("carbonNanotube")
+                .setTextureName(RandomTech.modid + ":carbonNanotube");
+        GameRegistry.registerItem(RandomTechItems.carbonNanotube, "carbonNanotube");
     }
 
     /**
      * Registers all the blocks and TileEntities for the mod.
      */
-    public static void registerBlocks() {
+    static void registerBlocks() {
         // Again, these are pretty much all the same.
         // Make a new block,
         // Set it's name (camelCase of the English name),
@@ -495,7 +501,7 @@ public class Registration {
     /**
      * Registers all manner of recipes for the mod.
      */
-    public static void registerRecipes() {
+    static void registerRecipes() {
 
         // Register the recipe for a sundial.
         GameRegistry.addRecipe(new ItemStack(RandomTechItems.sundial, 1), "s",
@@ -710,9 +716,14 @@ public class Registration {
                                'I', Blocks.iron_block, 'd', Items.record_13, 'i',
                                Items.iron_ingot, 'M', RandomTechBlocks.machineCore, 'J',
                                Blocks.jukebox);
+
+        // Thermionic Engine recipe.
+        GameRegistry.addRecipe(new ItemStack(RandomTechBlocks.thermionicEngine), "btb", "bMb", "btb",
+                               'b', Items.bucket, 't', RandomTechItems.carbonNanotube,
+                               'M', RandomTechBlocks.machineCore);
     }
 
-    public static void registerEntities() {
+    static void registerEntities() {
         int modEntityId = 0;
         EntityRegistry.registerModEntity(EntityUnclipperBullet.class,
                                          "UnclipperBullet", ++modEntityId, RandomTech.instance, 64, 10,
@@ -730,7 +741,7 @@ public class Registration {
                                          ++modEntityId, RandomTech.instance, 80, 3, true);
     }
 
-    public static void registerNeptuneSplashes() {
+    static void registerNeptuneSplashes() {
         FMLInterModComms.sendMessage("neptune", "add-splash",
                                      "Fred was intelligent!");
         FMLInterModComms.sendMessage("neptune", "add-splash", "Very random!");
@@ -767,67 +778,66 @@ public class Registration {
     public static class RandomTechItems {
         // All of the items to be registered.
         public static Item itemDebugger;
-        public static Item sundial;
-        public static Item swordOfMendragor;
-        public static Item deathPack;
-        public static Item unclipper;
-        public static Item enthalpiteShard;
-        public static Item enthalpite;
         public static Item moltenIngot;
-        public static Item hammerStone;
-        public static Item hammerIron;
-        public static Item hammerGold;
-        public static Item hammerDiamond;
         public static Item hardenedMetalIngot;
         public static Item hardenedMagicalIngot;
-        public static Item hardenedMetalPickaxe;
-        public static Item hardenedMetalHoe;
-        public static Item hardenedMetalAxe;
-        public static Item hardenedMetalShovel;
-        public static Item hardenedMetalSword;
-        public static Item hardenedMetalHammer;
-        public static Item hardenedMagicalPickaxe;
-        public static Item hardenedMagicalHoe;
-        public static Item hardenedMagicalAxe;
-        public static Item hardenedMagicalShovel;
-        public static Item hardenedMagicalSword;
-        public static Item hardenedMagicalHammer;
-        public static Item dungeonChestMaker;
-        public static Item aquaIraBottle;
-        public static Item bottledWrath;
-        public static Item chunkingPick;
         public static Item railgunBolt;
-        public static Item railgun;
         public static Item hardenedMetalPlate;
         public static Item cpu;
-        public static Item flareGun;
         public static Item energyFez;
-        public static Item tractorBeam;
         public static Item superFuel;
         public static Item nulliumIngot;
         public static Item galatine;
         public static Item powerCard;
-        public static Item bucketOfBurblingInfinity;
+        public static Item carbonNanotube;
+        static Item sundial;
+        static Item swordOfMendragor;
+        static Item deathPack;
+        static Item unclipper;
+        static Item enthalpiteShard;
+        static Item enthalpite;
+        static Item hammerStone;
+        static Item hammerIron;
+        static Item hammerGold;
+        static Item hammerDiamond;
+        static Item hardenedMetalPickaxe;
+        static Item hardenedMetalHoe;
+        static Item hardenedMetalAxe;
+        static Item hardenedMetalShovel;
+        static Item hardenedMetalSword;
+        static Item hardenedMetalHammer;
+        static Item hardenedMagicalPickaxe;
+        static Item hardenedMagicalHoe;
+        static Item hardenedMagicalAxe;
+        static Item hardenedMagicalShovel;
+        static Item hardenedMagicalSword;
+        static Item hardenedMagicalHammer;
+        static Item aquaIraBottle;
+        static Item bottledWrath;
+        static Item chunkingPick;
+        static Item railgun;
+        static Item flareGun;
+        static Item tractorBeam;
+        static Item bucketOfBurblingInfinity;
     }
 
     public static class RandomTechBlocks {
         // All of the blocks to be registered.
         public static Block smithy;
-        public static Block potionDiffuser;
-        public static Block repository;
         public static Block yellowBrickRoad;
         public static Block reinforcedRock;
         public static Block aquaIra;
-        public static Block blockGunpowder;
         public static Block speedLadder;
-        public static Block synthesisMachine;
-        public static Block kineticGenerator;
         public static Block machineCore;
         public static Block autoHammer;
         public static Block nulliumOre;
-        public static Block empowermentTable;
-        // public static Block smartDispenser;
-        public static Block arthropodicDisruptor;
         public static Block thermionicEngine;
+        static Block repository;
+        static Block blockGunpowder;
+        static Block synthesisMachine;
+        static Block kineticGenerator;
+        static Block empowermentTable;
+        // public static Block smartDispenser;
+        static Block arthropodicDisruptor;
     }
 }

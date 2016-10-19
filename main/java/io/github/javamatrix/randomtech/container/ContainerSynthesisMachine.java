@@ -14,12 +14,12 @@ import net.minecraftforge.common.util.ForgeDirection;
 import java.util.List;
 
 public class ContainerSynthesisMachine extends Container {
-    public static final int PACKET_RF_STORED = 0;
-    public static final int PACKET_WORK_TIME = 1;
-    TileSynthesisMachine te;
-    EntityPlayer player;
-    int rfStored = 0;
-    int currentWorkDone = 0;
+    private static final int PACKET_RF_STORED = 0;
+    private static final int PACKET_WORK_TIME = 1;
+    private TileSynthesisMachine te;
+    private EntityPlayer player;
+    private int rfStored = 0;
+    private int currentWorkDone = 0;
 
     public ContainerSynthesisMachine(EntityPlayer who, TileSynthesisMachine what) {
         player = who;
@@ -144,7 +144,7 @@ public class ContainerSynthesisMachine extends Container {
                         && !this.mergeItemStack(origStack, 6, 33, false)) {
                     return null;
                 }
-            } else if (!this.mergeItemStack(origStack, 6, 42, false)) {
+            } else if (!this.mergeItemStack(origStack, 6, 41, false)) {
                 return null;
             }
 

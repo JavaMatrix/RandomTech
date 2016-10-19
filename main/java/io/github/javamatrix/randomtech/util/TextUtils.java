@@ -10,7 +10,7 @@ import java.util.List;
 // This class contains jokes that IntelliJ is taking way too literally.
 @SuppressWarnings("ConstantConditions")
 public class TextUtils {
-    public static List<Integer> intColors = new ArrayList<Integer>() {{
+    private static List<Integer> intColors = new ArrayList<Integer>() {{
         add(0xBE0000);
         add(0xFE3F3F);
         add(0xD9A334);
@@ -28,7 +28,7 @@ public class TextUtils {
         add(0x3F3F3F);
         add(0x000000);
     }};
-    public static List<String> chatColors = new ArrayList<String>() {{
+    private static List<String> chatColors = new ArrayList<String>() {{
         add(EnumChatFormatting.DARK_RED + "");
         add(EnumChatFormatting.RED + "");
         add(EnumChatFormatting.GOLD + "");
@@ -72,7 +72,7 @@ public class TextUtils {
         return str;
     }
 
-    public static String colorToChatColor(int color) {
+    private static String colorToChatColor(int color) {
         byte rc = (byte) (color & 0xFF0000 >> 16);
         byte gc = (byte) (color & 0x00FF00 >> 8);
         byte bc = (byte) (color & 0x0000FF);
@@ -93,7 +93,7 @@ public class TextUtils {
     }
 
     public static String formatFluid(FluidStack stack) {
-        String color = colorToChatColor(stack.getFluid().getColor());
+        String color = colorToChatColor(stack.getFluid().getColor(stack));
         return String.format("%s%s: %d mB", color, stack.getLocalizedName(), stack.amount);
     }
 }

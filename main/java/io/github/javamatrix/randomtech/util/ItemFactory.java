@@ -1,7 +1,9 @@
 package io.github.javamatrix.randomtech.util;
 
+import net.minecraft.block.Block;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
+import net.minecraft.nbt.NBTBase;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.nbt.NBTTagList;
 import net.minecraft.nbt.NBTTagString;
@@ -13,6 +15,10 @@ public class ItemFactory {
     public ItemStack item;
 
     public ItemFactory(Item type) {
+        item = new ItemStack(type);
+    }
+
+    public ItemFactory(Block type) {
         item = new ItemStack(type);
     }
 
@@ -139,6 +145,17 @@ public class ItemFactory {
 
     public ItemStack finish() {
         return item;
+    }
+
+    public void addTag(String name, NBTBase tag) {
+        NBTTagCompound nbt = new NBTTagCompound();
+        if (item.hasTagCompound()) {
+            nbt = item.getTagCompound();
+        }
+
+        nbt.setTag(name, tag);
+
+        item.setTagCompound(nbt);
     }
 
     public ItemFactory setDamage(int damage) {

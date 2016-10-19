@@ -50,6 +50,7 @@ item.powerCard.name=Power Card
 item.energyFez.name=Energy Fez
 item.bucketOfBurblingInfinity.name=Waterpail of Burbling Infinity
 item.bucketOfBurblingInfinity.2.name=Nifty Space Bucket
+item.carbonNanotube.name=Carbon Nanotube Pipe
 
 tile.smithy.name=Smithy
 tile.hardenedMetalBlock.name=Block of Hardened Metal
@@ -83,3 +84,4 @@ potion.strider.postfix=Potion of Striding
 
 text.generating=Generating
 text.noliquid=No Liquid
+text.clicktodrain=(Click to Drain)
